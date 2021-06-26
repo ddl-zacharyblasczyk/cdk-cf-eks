@@ -25,13 +25,10 @@ manifests = [
 # deprovisoning efs backups/route53, tagging the eks cluster until
 # the CloudFormation api supports it, etc.)
 class DominoAwsConfigurator:
-    def __init__(
-        self, scope: cdk.Construct, eks_cluster: eks.Cluster, vpc: ec2.Vpc, s3_api_statement: iam.PolicyStatement
-    ):
+    def __init__(self, scope: cdk.Construct, eks_cluster: eks.Cluster, vpc: ec2.Vpc):
         self.scope = scope
         self.eks_cluster = eks_cluster
         self.vpc = vpc
-        self.s3_api_statement = s3_api_statement
 
         self.install_calico()
 

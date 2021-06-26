@@ -39,8 +39,8 @@ class DominoStack(cdk.Stack):
             self.vpc_stack.private_subnet_name,
             self.vpc_stack.bastion_sg,
             self.cfg.route53.zone_ids,
-            self.s3_stack.policy,
             nest,
+            self.s3_stack.buckets,
         )
         self.efs_stack = DominoEfsProvisioner(
             self,
@@ -54,9 +54,7 @@ class DominoStack(cdk.Stack):
         # At least until we get the lambda working, this has to live in the eks stack's scope
         # as there is some implicit token used to construct the magically auto-generated kubectl
         # lambda behind the scenes when they are in separate stacks (nested or otehrwise).
-        DominoAwsConfigurator(
-            self.eks_stack.scope, self.eks_stack.cluster, self.vpc_stack.vpc, self.s3_stack.s3_api_statement
-        )
+        DominoAwsConfigurator(self.eks_stack.scope, self.eks_stack.cluster, self.vpc_stack.vpc)
 
         self.generate_outputs()
 

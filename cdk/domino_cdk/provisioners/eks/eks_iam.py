@@ -11,7 +11,7 @@ class DominoEksIamProvisioner:
     ) -> None:
         self.scope = scope
 
-    def provision(self, name: str, cluster_name: str, s3_policy: iam.ManagedPolicy, r53_zone_ids: List[str]):
+    def provision(self, name: str, cluster_name: str, r53_zone_ids: List[str]):
         asg_group_statement = iam.PolicyStatement(
             actions=[
                 "autoscaling:DescribeAutoScalingInstances",
@@ -62,12 +62,16 @@ class DominoEksIamProvisioner:
 
         ecr_policy = iam.ManagedPolicy(
             self.scope,
-            "DominoEcrReadOnly",
+            f"{name}-DominoEcrRestricted",
             managed_policy_name=f"{name}-DominoEcrRestricted",
             statements=[
                 iam.PolicyStatement(
                     effect=iam.Effect.DENY,
-                    actions=["ecr:*"],
+                    actions=[
+                        "ecr:BatchCheckLayerAvailability",
+                        "ecr:BatchGetImage",
+                        "ecr:GetDownloadUrlForLayer",
+                    ],
                     conditions={"StringNotEqualsIfExists": {"ecr:ResourceTag/domino-deploy-id": name}},
                     resources=[f"arn:aws:ecr:*:{self.scope.account}:*"],
                 ),
@@ -75,7 +79,6 @@ class DominoEksIamProvisioner:
         )
 
         managed_policies = [
-            s3_policy,
             ecr_policy,
             autoscaler_policy,
             iam.ManagedPolicy.from_aws_managed_policy_name('AmazonEKSWorkerNodePolicy'),

@@ -11,18 +11,7 @@ from domino_cdk.config import S3
 class DominoS3Provisioner:
     def __init__(self, scope: cdk.Construct, construct_id: str, name: str, s3: List[S3], nest: bool, **kwargs):
         self.scope = cdk.NestedStack(scope, construct_id, **kwargs) if nest else scope
-
-        self.s3_api_statement = iam.PolicyStatement(
-            actions=[
-                "s3:PutObject",
-                "s3:GetObject",
-                "s3:DeleteObject",
-                "s3:ListMultipartUploadParts",
-                "s3:AbortMultipartUpload",
-            ]
-        )
         self.provision_buckets(name, s3)
-        self.provision_iam_policy(name)
 
     def provision_buckets(self, name: str, s3: List[S3]):
         self.buckets = {}
@@ -71,23 +60,5 @@ class DominoS3Provisioner:
                     conditions={"Null": {"s3:x-amz-server-side-encryption": "true"}},
                 )
             )
-            self.s3_api_statement.add_resources(f"{self.buckets[bucket].bucket_arn}*")
-            cdk.CfnOutput(self.scope, f"{bucket}-output", value=self.buckets[bucket].bucket_name)
 
-    def provision_iam_policy(self, name: str):
-        self.policy = iam.ManagedPolicy(
-            self.scope,
-            "S3",
-            managed_policy_name=f"{name}-S3",
-            statements=[
-                iam.PolicyStatement(
-                    actions=[
-                        "s3:ListBucket",
-                        "s3:GetBucketLocation",
-                        "s3:ListBucketMultipartUploads",
-                    ],
-                    resources=["*"],
-                ),
-                self.s3_api_statement,
-            ],
-        )
+            cdk.CfnOutput(self.scope, f"{bucket}-output", value=self.buckets[bucket].bucket_name)
