@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import Dict, List
 
 import aws_cdk.aws_eks as eks
 import aws_cdk.aws_iam as iam
@@ -64,7 +64,7 @@ s3_policies = {
     },
     "read_blobs": {
         "blobs": s3_read_permissions,
-    }
+    },
 }
 
 
@@ -137,7 +137,6 @@ class DominoEksK8sIamRolesProvisioner:
             for policy_name in policy_list:
                 iam_role.add_managed_policy(managed_policies[policy_name])
 
-
     def create_ecr_policy(self, stack_name: str, policy_name: str, actions: List[str]):
         return iam.ManagedPolicy(
             self.scope,
@@ -158,9 +157,7 @@ class DominoEksK8sIamRolesProvisioner:
             ],
         )
 
-    def create_s3_policy(
-        self, policy_name: str, policy: str, cfg: Dict[str, List[str]], buckets: Dict[str, Bucket]
-    ):
+    def create_s3_policy(self, policy_name: str, policy: str, cfg: Dict[str, List[str]], buckets: Dict[str, Bucket]):
         statements = []
         for bucket_name, actions in cfg.items():
             if bucket_name not in buckets:

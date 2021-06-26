@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import Dict, List
 
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_eks as eks
@@ -9,8 +9,10 @@ from aws_cdk.aws_s3 import Bucket
 from domino_cdk.config import EKS
 from domino_cdk.provisioners.eks.eks_cluster import DominoEksClusterProvisioner
 from domino_cdk.provisioners.eks.eks_iam import DominoEksIamProvisioner
+from domino_cdk.provisioners.eks.eks_iam_roles_for_k8s import (
+    DominoEksK8sIamRolesProvisioner,
+)
 from domino_cdk.provisioners.eks.eks_nodegroup import DominoEksNodegroupProvisioner
-from domino_cdk.provisioners.eks.eks_iam_roles_for_k8s import DominoEksK8sIamRolesProvisioner
 
 
 class DominoEksProvisioner:
