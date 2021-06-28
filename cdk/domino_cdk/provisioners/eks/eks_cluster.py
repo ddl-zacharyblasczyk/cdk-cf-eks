@@ -88,6 +88,28 @@ class DominoEksClusterProvisioner:
             },
         )
 
+        params = {
+            "resourceArn": f"arn:aws:eks:{self.scope.region}:{self.scope.account}:cluster/{cluster.cluster_name}",
+            "tags": {
+                "domino-deploy-id": self.scope.name,
+            },
+        }
+
+        cr.AwsCustomResource(
+            self.scope,
+            "TagClusterCustom",
+            # timeout defaults to 2 minutes
+            log_retention=logs.RetentionDays.ONE_DAY,  # defaults to never delete logs
+            policy=cr.AwsCustomResourcePolicy.from_sdk_calls(resources=cr.AwsCustomResourcePolicy.ANY_RESOURCE),
+            on_create={
+                "service": "EKS",
+                "action": "tagResource",
+                "parameters": params,
+                "physical_resource_id": cr.PhysicalResourceId.of("TagClusterCustom"),
+            },
+        )
+
+
         if bastion_sg:
             cluster.cluster_security_group.add_ingress_rule(
                 peer=bastion_sg,
