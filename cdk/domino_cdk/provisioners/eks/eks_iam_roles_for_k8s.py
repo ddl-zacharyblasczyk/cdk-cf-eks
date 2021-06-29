@@ -120,7 +120,7 @@ class DominoEksK8sIamRolesProvisioner:
         for name, cfg in ecr_policies.items():
             managed_policies[name] = self.create_ecr_policy(stack_name, name, cfg)
         for name, cfg in s3_policies.items():
-            managed_policies[name] = self.create_s3_policy(name, name, cfg, buckets)
+            managed_policies[name] = self.create_s3_policy(stack_name, name, cfg, buckets)
 
         for name, policy_list in roles.items():
             iam_role = iam.Role(

@@ -6,6 +6,8 @@ import aws_cdk.aws_iam as iam
 from aws_cdk import core as cdk
 
 from domino_cdk.config import EFS
+import aws_cdk.custom_resources as cr
+import aws_cdk.aws_logs as logs
 
 _DominoEfsStack = None
 
@@ -64,7 +66,7 @@ class DominoEfsProvisioner:
         vault = backup.BackupVault(
             self.scope,
             "efs_backup",
-            backup_vault_name=f'{name}-efs',
+            backup_vault_name=f"{name}-efs",
             removal_policy=cdk.RemovalPolicy[efs_backup.removal_policy or cdk.RemovalPolicy.RETAIN.value],
         )
         cdk.CfnOutput(self.scope, "backup-vault", value=vault.backup_vault_name)
@@ -102,3 +104,24 @@ class DominoEfsProvisioner:
             backup_selection_name=f"{name}-efs",
             role=backupRole,
         )
+
+        params = {
+            "BackupVaultName": f"{name}-efs",
+            "RecoveryPointArn": f"arn:aws:backup:{self.scope.region}:{self.scope.account}:recovery-point:*",
+        }
+
+        custom = cr.AwsCustomResource(
+            self.scope,
+            "EmptyBackupCustom",
+            # timeout defaults to 2 minutes
+            log_retention=logs.RetentionDays.ONE_DAY,  # defaults to never delete logs
+            policy=cr.AwsCustomResourcePolicy.from_sdk_calls(resources=cr.AwsCustomResourcePolicy.ANY_RESOURCE),
+            on_delete={
+                "service": "Backup",
+                "action": "DeleteRecoveryPoint",
+                "parameters": params,
+                "physical_resource_id": cr.PhysicalResourceId.of("EmptyBackupCustom"),
+            },
+        )
+
+        custom.node.add_dependency(vault)

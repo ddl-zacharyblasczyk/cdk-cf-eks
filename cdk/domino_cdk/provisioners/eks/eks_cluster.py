@@ -109,7 +109,6 @@ class DominoEksClusterProvisioner:
             },
         )
 
-
         if bastion_sg:
             cluster.cluster_security_group.add_ingress_rule(
                 peer=bastion_sg,
